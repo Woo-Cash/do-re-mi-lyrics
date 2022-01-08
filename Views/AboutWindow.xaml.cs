@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Input;
 using Do_Re_Mi_Lyrics.ViewModels;
 
 namespace Do_Re_Mi_Lyrics.Views;
@@ -32,5 +35,35 @@ public partial class AboutWindow : Window
     private void CloseClick(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void Url_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        OpenUrl("https://github.com/Woo-Cash/do-re-mi-lyrics");
+    }
+
+    private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        OpenUrl("mailto:lukasz.przestrzelski@gmail.com");
+    }
+
+    private void OpenUrl(string url)
+    {
+        try
+        {
+            Process.Start(url);
+        }
+        catch
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                url = url.Replace("&", "^&");
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") {CreateNoWindow = true});
+            }
+            else
+            {
+                throw;
+            }
+        }
     }
 }
