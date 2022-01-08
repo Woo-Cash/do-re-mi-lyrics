@@ -14,8 +14,9 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Images\DO-RE-Mi-icon.ico</ApplicationIcon>
-    <AssemblyVersion>1.0</AssemblyVersion>
-    <FileVersion>1.0</FileVersion>
+    <AssemblyVersion></AssemblyVersion>
+    <FileVersion></FileVersion>
+    <PackageLicenseFile>D:\Źródła własne\GitHub\do-re-mi-lyrics\TextResources\license.html</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
