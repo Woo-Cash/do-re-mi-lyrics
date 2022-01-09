@@ -26,8 +26,8 @@ Keyboard shortcuts:
 * F2 - New lyrics
 * F3 - Open audio file
 * F4 - Open lyrics file
-* F5 - Set time at the beginning of the highlighted word
-* F6 - Set time at the end of the previous line (if there's a longer gap between two lines)
+* F5 - Set time at the end of the previous word (if there's a longer gap between two words/lines)
+* F6 - Set time at the beginning of the highlighted word
 * F8 - Removes time from the previous word
 * F12 - Edit text of the lyrics (not working yet)
 * Ctrl+S - Save lyrics file
@@ -37,6 +37,7 @@ Keyboard shortcuts:
 * Right - Highlight the next word
 * Up - Highlight the first word in the previous line
 * Down - Highlight the first word in the next line
+* Ctrl+Enter - Change playing time to the current word minus 3 seconds
 * Enter - Move the current word to the next line
 * Backspace - Move the current line to the previous one (works only when the first word in line is highlighted)
 * Delete - Move the next line to the end of current one (works only when the last word in line is highlighted)

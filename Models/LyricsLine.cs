@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Do_Re_Mi_Lyrics.Models;
 
 public class LyricsLine : INotifyPropertyChanged
 {
-    internal LyricsWord? FirstWord;
-    internal LyricsWord? LastWord;
     private bool _isNotProperTime;
-    private LyricsLine? _nextLine;
-    private LyricsLine? _previousLine;
-    private TimeSpan _startTime;
+    private bool _isTooShortTime;
     private ObservableCollection<LyricsWord> _words = new();
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public TimeSpan StartTime => FirstWord?.StartTime ?? TimeSpan.Zero;
+
     public string StartTimeText => StartTime.ToString(@"\[mm\:ss\.ff\]");
+
+    public string Text => Words.Aggregate("", (current, word) => $"{current}{word.Word} ");
 
     public bool IsNotProperTime
     {
@@ -29,21 +30,13 @@ public class LyricsLine : INotifyPropertyChanged
         }
     }
 
-    public TimeSpan StartTime
+    public bool IsTooShortTime
     {
-        get => _startTime;
+        get => _isTooShortTime;
         set
         {
-            _startTime = value;
-            CheckProperTime();
-            NextLine?.CheckProperTime();
-            foreach (LyricsWord word in Words)
-            {
-                word.CheckProperTime();
-            }
-
+            _isTooShortTime = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(StartTimeText));
         }
     }
 
@@ -57,30 +50,46 @@ public class LyricsLine : INotifyPropertyChanged
         }
     }
 
-    internal LyricsLine? NextLine
-    {
-        get => _nextLine;
-        set
-        {
-            _nextLine = value;
-            CheckProperTime();
-            NextLine?.CheckProperTime();
-        }
-    }
+    internal LyricsWord? FirstWord => Words.Count > 0 ? Words[0] : null;
+    internal LyricsWord? LastWord => Words.Count > 0 ? Words[^1] : null;
 
-    internal LyricsLine? PreviousLine
-    {
-        get => _previousLine;
-        set
-        {
-            _previousLine = value;
-            CheckProperTime();
-        }
-    }
+    internal LyricsLine? NextLine => Application.Lyrics.LastLine != this ? Application.Lyrics.LyricsLines[Application.Lyrics.LyricsLines.IndexOf(this) + 1] : null;
+
+    internal LyricsLine? PreviousLine => Application.Lyrics.FirstLine != this ? Application.Lyrics.LyricsLines[Application.Lyrics.LyricsLines.IndexOf(this) - 1] : null;
 
     public void CheckProperTime()
     {
-        IsNotProperTime = PreviousLine?.StartTime > StartTime;
+        IsNotProperTime = StartTime - PreviousLine?.LastWord?.EndTime < TimeSpan.Zero;
+        IsTooShortTime = !string.IsNullOrWhiteSpace(FirstWord?.Word) && StartTime - PreviousLine?.StartTime < TimeSpan.FromSeconds(1.5) &&
+                         Application.Lyrics.FirstLine?.NextLine != this;
+    }
+
+    public void AddWord(LyricsWord word)
+    {
+        Words.Add(word);
+        UpdateStartTimeText();
+    }
+
+    public void InsertWord(int index, LyricsWord word)
+    {
+        Words.Insert(index, word);
+        UpdateStartTimeText();
+    }
+
+    public void RemoveWord(LyricsWord word)
+    {
+        Words.Remove(word);
+        UpdateStartTimeText();
+    }
+
+    public void UpdateStartTimeText()
+    {
+        OnPropertyChanged(nameof(StartTimeText));
+    }
+
+    public override string ToString()
+    {
+        return Words.Aggregate(StartTimeText, (current, word) => current + word);
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

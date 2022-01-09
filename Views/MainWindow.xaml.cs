@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Do_Re_Mi_Lyrics.Models;
 using Do_Re_Mi_Lyrics.ViewModels;
+using Application = Do_Re_Mi_Lyrics.Models.Application;
 
 namespace Do_Re_Mi_Lyrics.Views;
 
@@ -43,17 +44,17 @@ public partial class MainWindow
 
     private void RewindClick(object sender, RoutedEventArgs e)
     {
-        _viewModel.Rewind();
+        Application.Audio.Rewind();
     }
 
     private void StopClick(object sender, RoutedEventArgs e)
     {
-        _viewModel.Stop();
+        Application.Audio.Stop();
     }
 
     private void ForwardClick(object sender, RoutedEventArgs e)
     {
-        _viewModel.FastForward();
+        Application.Audio.FastForward();
     }
 
     private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -74,13 +75,13 @@ public partial class MainWindow
                 _viewModel.OpenLyricsFile();
                 break;
             case Key.F5 when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.SetTimeToCurrentWord();
+                Application.Lyrics.SetEndingTimeToPreviousLine();
                 break;
             case Key.F6 when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.SetEndingTimeToPreviousLine();
+                Application.Lyrics.SetTimeToCurrentWord();
                 break;
             case Key.F8 when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.RemoveTimeInPreviousWord();
+                Application.Lyrics.RemoveStartTime();
                 break;
             case Key.S when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift):
                 _viewModel.SaveLyricsToNewFile();
@@ -92,43 +93,46 @@ public partial class MainWindow
                 _viewModel.ParseLyricsFromClipboard();
                 break;
             case Key.Left when (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control:
-                _viewModel.Rewind();
+                Application.Audio.Rewind();
                 break;
             case Key.Right when (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control:
-                _viewModel.FastForward();
+                Application.Audio.FastForward();
                 break;
             case Key.Left when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.SelectPreviousWord();
+                Application.Lyrics.SelectPreviousWord();
                 break;
             case Key.Right when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.SelectNextWord();
+                Application.Lyrics.SelectNextWord();
                 break;
             case Key.Up when Keyboard.Modifiers == ModifierKeys.Control:
-                _viewModel.SetTempoUp();
+                Application.Audio.SetTempoUp();
                 break;
             case Key.Down when Keyboard.Modifiers == ModifierKeys.Control:
-                _viewModel.SetTempoDown();
+                Application.Audio.SetTempoDown();
                 break;
             case Key.Up when Keyboard.Modifiers == ModifierKeys.Shift:
-                _viewModel.SetVolumeUp();
+                Application.Audio.SetVolumeUp();
                 break;
             case Key.Down when Keyboard.Modifiers == ModifierKeys.Shift:
-                _viewModel.SetVolumeDown();
+                Application.Audio.SetVolumeDown();
                 break;
             case Key.Up when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.SelectPreviousLine();
+                Application.Lyrics.SelectPreviousLine();
                 break;
             case Key.Down when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.SelectNextLine();
+                Application.Lyrics.SelectNextLine();
+                break;
+            case Key.Enter when Keyboard.Modifiers == ModifierKeys.Control:
+                _viewModel.MovePlaySliderToWord();
                 break;
             case Key.Enter when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.MoveWordToNewLine();
+                Application.Lyrics.MoveWordToNewLine();
                 break;
             case Key.Back when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.MoveLineToPrevious();
+                Application.Lyrics.MoveLineToPrevious();
                 break;
             case Key.Delete when Keyboard.Modifiers == ModifierKeys.None:
-                _viewModel.MoveNextLineToCurrent();
+                Application.Lyrics.MoveNextLineToCurrent();
                 break;
             case Key.Space when Keyboard.Modifiers == ModifierKeys.None:
                 _viewModel.PlayOrPause();
@@ -143,18 +147,20 @@ public partial class MainWindow
             e.Cancel = true;
         }
 
-        _viewModel.Dispose();
+        Application.Audio.Dispose();
 
-        if (File.Exists($"{Path.GetTempPath()}temp.wav"))
+        if (!File.Exists($"{Path.GetTempPath()}temp.wav"))
         {
-            try
-            {
-                File.Delete($"{Path.GetTempPath()}temp.wav");
-            }
-            catch
-            {
-                // ignored
-            }
+            return;
+        }
+
+        try
+        {
+            File.Delete($"{Path.GetTempPath()}temp.wav");
+        }
+        catch
+        {
+            // ignored
         }
     }
 
@@ -164,10 +170,10 @@ public partial class MainWindow
         {
             TextBlock wordTextBlock = (TextBlock) sender;
             LyricsWord word = (LyricsWord) wordTextBlock.DataContext;
-            _viewModel.SelectWord(word);
+            Application.Lyrics.SelectWord(word);
             if (e.ClickCount == 2)
             {
-                _viewModel.MovePlaySliderToWord(word);
+                _viewModel.MovePlaySliderToWord();
             }
         }
         catch (Exception ex)
