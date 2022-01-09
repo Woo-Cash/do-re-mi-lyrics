@@ -19,11 +19,7 @@ public class AboutWindowViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    public string NameVersion => $"{Assembly.GetEntryAssembly()?.GetName().Name} v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
 
     public void ShowLicense()
     {
@@ -54,5 +50,10 @@ public class AboutWindowViewModel : INotifyPropertyChanged
         using StreamReader reader = new(stream, Encoding.UTF8);
         string result = reader.ReadToEnd();
         return result;
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

@@ -17,6 +17,7 @@
     <AssemblyVersion></AssemblyVersion>
     <FileVersion></FileVersion>
     <PackageLicenseFile>D:\Źródła własne\GitHub\do-re-mi-lyrics\TextResources\license.html</PackageLicenseFile>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
