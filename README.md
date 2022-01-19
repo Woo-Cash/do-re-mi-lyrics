@@ -14,12 +14,17 @@ How to use:
 * use arrow keys and mouse to change current word
 * red time means that it's earlier then the previous one and it should be corrected
 
+How to split word into parts? Sometimes one syllable in a word is being sung several times longer than the rest. Then the word can be divided into two or more parts.
+* enter edit mode (F12)
+* write vertical bar character | in place where you want to split
+* leave the edit mode (F12)
+* now you can set the time for every part of the word separately.
+
 ![Do-Re-Mi Lyrics](https://user-images.githubusercontent.com/5322956/148644781-66c0b717-6c07-4ab4-b3a2-2b88bb669296.png)
 
 Mouse shortcuts:
 * Left Mouse Button - Highlight word
 * Double Left Mouse Button - Change playing time to the current word minus 3 seconds
-* Right Mouse Button - Divide word into parts (not working yet)
 
 Keyboard shortcuts:
 * F1 - About/Help/Changelog/License
@@ -29,14 +34,20 @@ Keyboard shortcuts:
 * F5 - Set time at the end of the previous word (if there's a longer gap between two words/lines)
 * F6 - Set time at the beginning of the highlighted word
 * F8 - Removes time from the previous word
-* F12 - Edit text of the lyrics (not working yet)
+* F12 - Edit text of the lyrics
 * Ctrl+S - Save lyrics file
 * Ctrl+Shift+S - Save lyrics to a new file
 * Ctrl+V - Paste lyrics text from the clipboard
+* Ctrl+Y, Ctrl+Shift+Z - Redo
+* Ctrl+Z - Undo
 * Left - Highlight the previous word
 * Right - Highlight the next word
 * Up - Highlight the first word in the previous line
 * Down - Highlight the first word in the next line
+* Ctrl+Minus - Decrease time of all words starting from current by 0.2 seconds
+* Ctrl+Plus - Increase time of all words starting from current by 0.2 seconds
+* Minus - Decrease time of the current word by 0.2 seconds
+* Plus - Increase time of the current word by 0.2 seconds
 * Ctrl+Enter - Change playing time to the current word minus 3 seconds
 * Enter - Move the current word to the next line
 * Backspace - Move the current line to the previous one (works only when the first word in line is highlighted)

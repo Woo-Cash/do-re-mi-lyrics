@@ -5,11 +5,12 @@
 <body style="font-family: Calibri">
 	<p><b>How to begin?</b></p>
 	<p>Open audio file. Open lyrics file or paste lyrics text from the clipboard. Start audio (Space) and use F5 to set time at the start of every word. Red time means that it's earlier then the previous one and it should be corrected.</p>
+	<p><b>How to split word into parts?</b></p>
+	<p>Sometimes one syllable in a word is being sung several times longer than the rest. Then the word can be split into two or more parts. Enter edit mode (F12), write vertical bar character | in place where you want to split and leave the edit mode (F12). Now you can set the time for every part of the word separately.</p>
 	<p><b>Mouse shortcuts</b></p>
 	<p>
 		<b>Left Mouse Button</b> - Highlight word<br />
 		<b>Double Left Mouse Button</b> - Change playing time to the current word minus 3 seconds<br />
-		<b>Right Mouse Button</b> - Divide word into parts (not working yet)<br />
 	</p>
 	<p><b>Keyboard shortcuts</b></p>
 	<p>
@@ -20,14 +21,20 @@
 		<b>F5</b> - Set time at the end of the previous word (if there's a longer gap between two words/lines)<br />
 		<b>F6</b> - Set time at the beginning of the highlighted word<br />
 		<b>F8</b> - Removes time from the previous word<br />
-		<b>F12</b> - Edit text of the lyrics (not working yet)<br />
+		<b>F12</b> - Edit text of the lyrics<br />
 		<b>Ctrl+S</b> - Save lyrics file<br />
 		<b>Ctrl+Shift+S</b> - Save lyrics to a new file<br />
 		<b>Ctrl+V</b> - Paste lyrics text from the clipboard<br />
+		<b>Ctrl+Y, Ctrl+Shift+Z</b> - Redo<br />
+		<b>Ctrl+Z</b> - Undo<br />
 		<b>Left</b> - Highlight the previous word<br />
 		<b>Right</b> - Highlight the next word<br />
 		<b>Up</b> - Highlight the first word in the previous line<br />
 		<b>Down</b> - Highlight the first word in the next line<br />
+		<b>Ctrl+Minus</b> - Decrease time of all words starting from current by 0.2 seconds<br />
+		<b>Ctrl+Plus</b> - Increase time of all words starting from current by 0.2 seconds<br />
+		<b>Minus</b> - Decrease time of the current word by 0.2 seconds<br />
+		<b>Plus</b> - Increase time of the current word by 0.2 seconds<br />
 		<b>Ctrl+Enter</b> - Change playing time to the current word minus 3 seconds<br />
 		<b>Enter</b> - Move the current word to the next line<br />
 		<b>Backspace</b> - Move the current line to the previous one (works only when the first word in line is highlighted)<br />

@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+	</head>
+	<body style="font-family: Calibri">
+		<p>
+			<b>v1.2.0 - 2022-01-19</b>
+			<ul>
+				<li>- fixed a few more bugs</li>
+				<li>- added edit mode</li>
+				<li>- added possibility to split words into parts</li>
+				<li>- added undo and redo</li>
+				<li>- scrollbar now follows the current word</li>
+				<li>- added Plus and Minus shortcuts</li>
+				<li>- better looking word highlights</li>
+			</ul>
+			<b>v1.1.0 - 2022-01-09</b>
+			<ul>
+				<li>- fixed dozens of bugs</li>
+				<li>- added possibility to set ending time if there's a gap between words</li>
+				<li>- added yellow background to the word that is actually played</li>
+				<li>- added Ctrl+Enter shortcut to change playing time to current word</li>
+			</ul>
+			<b>v1.0.0 - 2022-01-08</b>
+			<ul>
+				<li>- first version</li>
+				<li>- open and play audio</li>
+				<li>- open and paste lyrics</li>
+				<li>- set times on line start and end of every word</li>
+				<li>- move words to next and previous line</li>
+				<li>- clicking word highlights it</li>
+				<li>- double clicking word sets audio time to this word</li>
+			</ul>
+		</p>
+	</body>
+</html>

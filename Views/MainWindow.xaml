@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:Do_Re_Mi_Lyrics.ViewModels"
         xmlns:models="clr-namespace:Do_Re_Mi_Lyrics.Models"
+        xmlns:helper="clr-namespace:Do_Re_Mi_Lyrics.Helper"
         mc:Ignorable="d" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
         Title="Do-Re-Mi Lyrics" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowState="Maximized" KeyDown="Window_KeyDown" Closing="Window_Closing" Icon="/Images/DO-RE-Mi-icon.ico">
     <Window.Resources>
@@ -42,14 +43,13 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="Word" TargetType="TextBlock">
+        <Style x:Key="WordBorder" TargetType="Border">
             <d:Style.DataContext>
                 <x:Type Type="models:LyricsWord" />
             </d:Style.DataContext>
-            <Setter Property="FontFamily" Value="Calibri" />
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="VerticalAlignment" Value="Bottom" />
-            <Setter Property="Margin" Value="0,0,3,0" />
+            <Setter Property="Padding" Value="4, 2" />
+            <Setter Property="Margin" Value="-4, -2, -1, -2" />
+            <Setter Property="CornerRadius" Value="8" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsPlaying}" Value="true">
                     <Setter Property="Background" Value="LightGoldenrodYellow" />
@@ -58,6 +58,11 @@
                     <Setter Property="Background" Value="LightGreen" />
                 </DataTrigger>
             </Style.Triggers>
+        </Style>
+        <Style x:Key="Word" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Calibri" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
         </Style>
         <Style x:Key="WordEndTime" TargetType="TextBlock">
             <d:Style.DataContext>
@@ -72,6 +77,9 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsNotProperTime}" Value="true">
                     <Setter Property="Foreground" Value="Red" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsPartOfWord}" Value="true">
+                    <Setter Property="Margin" Value="0,0,0,0" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -98,7 +106,13 @@
             <Button Margin="4" Click="SaveLyricsAsClick" Background="Transparent" BorderBrush="#FFCCCCCC" Padding="4" ToolTip="Save lyrics as (Ctrl+Shift+S)" Focusable="False">
                 <Image Source="..\Images\save-as.png" />
             </Button>
-            <Button Margin="4" Click="EditClick" Background="Transparent" BorderBrush="#FFCCCCCC" Padding="4" ToolTip="Edit lyrics (F12)" Focusable="False">
+            <Button Margin="4" Click="UndoClick" IsEnabled="{Binding IsUndoEnabled}" Background="Transparent" BorderBrush="#FFCCCCCC" Padding="4" ToolTip="Undo (Ctrl+Z)" Focusable="False">
+                <Image Source="..\Images\undo.png" />
+            </Button>
+            <Button Margin="4" Click="RedoClick" IsEnabled="{Binding IsRedoEnabled}" Background="Transparent" BorderBrush="#FFCCCCCC" Padding="4" ToolTip="Redo (Ctrl+Y, Ctrl+Shift+Z)" Focusable="False">
+                <Image Source="..\Images\redo.png" />
+            </Button>
+            <Button Margin="4" Click="EditClick" Background="Transparent" BorderBrush="#FFCCCCCC" Padding="4" ToolTip="Edit mode on/off (F12)" Focusable="False">
                 <Image Source="..\Images\edit.png" />
             </Button>
             <Button Margin="4" Click="HelpClick" Background="Transparent" BorderBrush="#FFCCCCCC" Padding="4" ToolTip="Help (F1)" Focusable="False">
@@ -106,38 +120,68 @@
             </Button>
         </StackPanel>
         <GroupBox Header="{Binding LyricsFilePath, FallbackValue=Open or paste lyrics}" Grid.Row="1">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Focusable="False">
-                <ItemsControl DataContext="{Binding Lyrics}" ItemsSource="{Binding LyricsLines}" Focusable="False" KeyboardNavigation.TabNavigation="None">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" Focusable="False"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Left" Text="{Binding StartTimeText}" Style="{StaticResource LineTime}"/>
-                                <ItemsControl ItemsSource="{Binding Words}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding StartTimeText}" Style="{StaticResource WordStartTime}" MouseLeftButtonDown="Word_OnMouseLeftButtonDown"/>
-                                                <TextBlock Text="{Binding Word}" Style="{StaticResource Word}" MouseLeftButtonDown="Word_OnMouseLeftButtonDown"/>
-                                                <TextBlock Text="{Binding EndTimeText}" Style="{StaticResource WordEndTime}" MouseLeftButtonDown="Word_OnMouseLeftButtonDown"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </DockPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <Grid>
+                <TextBox Text="{Binding LyricsText, UpdateSourceTrigger=PropertyChanged}" helper:TextBoxHelper.CaretIndex="{Binding CaretIndex}" VerticalScrollBarVisibility="Auto" FontFamily="Calibri" FontSize="18">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Setter Property="FocusManager.FocusedElement" Value="{Binding RelativeSource={RelativeSource Self}}" />
+                                    <Setter Property="FocusManager.IsFocusScope" Value="True" />
+                                </DataTrigger>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="FocusManager.FocusedElement" Value="{Binding RelativeSource={RelativeSource Self}}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Focusable="False" helper:ScrollViewerHelper.VerticalOffset="{Binding ScrollViewerPosition, Mode=TwoWay}" SizeChanged="ScrollViewer_OnSizeChanged">
+                    <ScrollViewer.Style>
+                        <Style TargetType="ScrollViewer">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditMode}" Value="true">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ScrollViewer.Style>
+                    <ItemsControl DataContext="{Binding Lyrics}" ItemsSource="{Binding LyricsLines}" Focusable="False" KeyboardNavigation.TabNavigation="None">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Focusable="False"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding StartTimeText}" Style="{StaticResource LineTime}"/>
+                                    <ItemsControl ItemsSource="{Binding Words}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" SizeChanged="StackPanel_OnSizeChanged">
+                                                    <TextBlock Text="{Binding StartTimeText}" Style="{StaticResource WordStartTime}" MouseLeftButtonDown="Word_OnMouseLeftButtonDown"/>
+                                                    <Border Style="{StaticResource WordBorder}" MouseLeftButtonDown="Word_OnMouseLeftButtonDown">
+                                                        <TextBlock Text="{Binding Word}" Style="{StaticResource Word}"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding EndTimeText}" Style="{StaticResource WordEndTime}" MouseLeftButtonDown="Word_OnMouseLeftButtonDown"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </GroupBox>
         <GroupBox Header="{Binding AudioFilePath, FallbackValue=Open audio file}" Grid.Row="2" IsEnabled="{Binding IsAudioFileLoaded}" Focusable="False">
             <DockPanel>

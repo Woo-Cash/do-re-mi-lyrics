@@ -9,6 +9,7 @@ public class LyricsWord : INotifyPropertyChanged
     internal LyricsLine Line;
     private TimeSpan _endTime;
     private bool _isNotProperTime;
+    private bool _isPartOfWord;
     private bool _isPlaying;
     private bool _isSelected;
     private TimeSpan _startTime;
@@ -24,25 +25,22 @@ public class LyricsWord : INotifyPropertyChanged
 
     public string StartTimeText => (PreviousWord == null || StartTime != PreviousWord.EndTime) && Line.FirstWord != this ? StartTime.ToString(@"\<mm\:ss\.ff\>") : "";
 
-    public TimeSpan EndTime
-    {
-        get => _endTime;
-        set
-        {
-            _endTime = value;
-            CheckProperTime();
-            NextWord?.CheckProperTime();
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(EndTimeText));
-        }
-    }
-
     public bool IsNotProperTime
     {
         get => _isNotProperTime;
         set
         {
             _isNotProperTime = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsPartOfWord
+    {
+        get => _isPartOfWord;
+        set
+        {
+            _isPartOfWord = value;
             OnPropertyChanged();
         }
     }
@@ -67,7 +65,37 @@ public class LyricsWord : INotifyPropertyChanged
         }
     }
 
-    public TimeSpan StartTime
+    public string Word
+    {
+        get => _word;
+        set
+        {
+            _word = value;
+            OnPropertyChanged();
+        }
+    }
+
+    internal LyricsWord? NextWord => Line.LastWord == this || Line.LastWord == null || Line.Words.IndexOf(this) == -1
+        ? Line.NextLine?.FirstWord
+        : Line.Words[Line.Words.IndexOf(this) + 1];
+
+    internal LyricsWord? PreviousWord => Line.FirstWord == this || Line.FirstWord == null || Line.Words.IndexOf(this) == -1
+        ? Line.PreviousLine?.LastWord
+        : Line.Words[Line.Words.IndexOf(this) - 1];
+
+    internal TimeSpan EndTime
+    {
+        get => _endTime;
+        set
+        {
+            _endTime = value;
+            CheckProperTime();
+            NextWord?.CheckProperTime();
+            OnPropertyChanged(nameof(EndTimeText));
+        }
+    }
+
+    internal TimeSpan StartTime
     {
         get => _startTime;
         set
@@ -75,7 +103,6 @@ public class LyricsWord : INotifyPropertyChanged
             _startTime = value;
             CheckProperTime();
             NextWord?.CheckProperTime();
-            OnPropertyChanged();
             if (this == Line.FirstWord)
             {
                 Line.UpdateStartTimeText();
@@ -87,26 +114,6 @@ public class LyricsWord : INotifyPropertyChanged
         }
     }
 
-    public string Word
-    {
-        get => _word;
-        set
-        {
-            _word = value;
-            OnPropertyChanged();
-        }
-    }
-
-    internal LyricsWord? NextWord => Line.LastWord == this ? Line.NextLine?.FirstWord : Line.Words[Line.Words.IndexOf(this) + 1];
-
-    internal LyricsWord? PreviousWord => Line.FirstWord == this ? Line.PreviousLine?.LastWord : Line.Words[Line.Words.IndexOf(this) - 1];
-
-    public void CheckProperTime()
-    {
-        IsNotProperTime = EndTime < Line.StartTime || EndTime < PreviousWord?.EndTime;
-        Line.CheckProperTime();
-    }
-
     public override string ToString()
     {
         string text = "";
@@ -115,11 +122,32 @@ public class LyricsWord : INotifyPropertyChanged
             text = StartTimeText;
         }
 
-        text += $"{Word}{EndTimeText} ";
+        text += $"{Word}{EndTimeText}{(_isPartOfWord ? "" : " ")}";
         return text;
     }
 
-    public void UpdateStartTimeText()
+    public LyricsWord Clone(LyricsLine lyricsLine)
+    {
+        LyricsWord lyricsWord = new(lyricsLine)
+        {
+            IsNotProperTime = IsNotProperTime,
+            IsPartOfWord = IsPartOfWord,
+            StartTime = StartTime,
+            EndTime = EndTime,
+            IsPlaying = IsPlaying,
+            IsSelected = IsSelected,
+            Word = Word
+        };
+        return lyricsWord;
+    }
+
+    internal void CheckProperTime()
+    {
+        IsNotProperTime = EndTime < Line.StartTime || EndTime < PreviousWord?.EndTime;
+        Line.CheckProperTime();
+    }
+
+    internal void UpdateStartTimeText()
     {
         OnPropertyChanged(nameof(StartTimeText));
     }

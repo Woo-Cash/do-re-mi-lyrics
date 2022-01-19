@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -15,12 +16,21 @@ namespace Do_Re_Mi_Lyrics.ViewModels;
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
+    internal double LineHeight;
+    internal double ScrollViewerHeight;
     private readonly DispatcherTimer _playTimer = new(DispatcherPriority.Send) {Interval = new TimeSpan(0, 0, 0, 0, 100)};
+    private readonly List<Lyrics> _redoList = new();
+    private readonly List<Lyrics> _undoList = new();
     private readonly Window _window;
     private string _audioFilePath = "Open audio file";
+    private int _caretIndex;
+    private bool _isEditMode;
     private string _lyricsFilePath = "Open or paste lyrics";
+    private string _lyricsText = "";
     private string _playPauseIconPath = @"..\Images\play.png";
     private string _playPauseText = "Play (Space)";
+    private double _scrollViewerPosition;
+
 
     public MainWindowViewModel(Window window)
     {
@@ -58,6 +68,8 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     public bool IsAudioFileLoaded => AudioFilePath != "Open audio file";
     public bool IsLyricsFileLoaded => LyricsFilePath != "Open or paste lyrics";
+    public bool IsRedoEnabled => _redoList.Count > 0;
+    public bool IsUndoEnabled => _undoList.Count > 1;
 
     public int PlaySliderMaximum => (int) Audio.TotalTime.TotalMilliseconds;
 
@@ -87,6 +99,26 @@ public class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    public int CaretIndex
+    {
+        get => _caretIndex;
+        set
+        {
+            _caretIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsEditMode
+    {
+        get => _isEditMode;
+        set
+        {
+            _isEditMode = value;
+            OnPropertyChanged();
+        }
+    }
+
     public Lyrics Lyrics
     {
         get => Application.Lyrics;
@@ -103,6 +135,16 @@ public class MainWindowViewModel : INotifyPropertyChanged
         set
         {
             _lyricsFilePath = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string LyricsText
+    {
+        get => _lyricsText;
+        set
+        {
+            _lyricsText = value;
             OnPropertyChanged();
         }
     }
@@ -167,6 +209,16 @@ public class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    public double ScrollViewerPosition
+    {
+        get => _scrollViewerPosition;
+        set
+        {
+            _scrollViewerPosition = value;
+            OnPropertyChanged();
+        }
+    }
+
     public void OpenAudioFile()
     {
         try
@@ -221,6 +273,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
             Settings.Default.LyricsFilePath = LyricsFilePath;
             Settings.Default.LyricsFilesPath = Path.GetDirectoryName(LyricsFilePath);
             Settings.Default.Save();
+            _undoList.Clear();
             ParseLyricsFromFile();
         }
         catch (Exception ex)
@@ -238,7 +291,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
                 return SaveLyricsToNewFile();
             }
 
-            string text = Lyrics.GetLyricsText();
+            string text = Lyrics.GetLyricsText(out _);
             File.WriteAllText(LyricsFilePath, text, Encoding.UTF8);
             Application.IsSaved = true;
         }
@@ -266,7 +319,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            string text = Lyrics.GetLyricsText();
+            string text = Lyrics.GetLyricsText(out _);
             File.WriteAllText(sfd.FileName, text, Encoding.UTF8);
             LyricsFilePath = sfd.FileName;
             Settings.Default.LyricsFilePath = LyricsFilePath;
@@ -329,6 +382,11 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     public void MovePlaySliderToWord()
     {
+        if (!IsAudioFileLoaded)
+        {
+            return;
+        }
+
         TimeSpan timeSpan = Lyrics.GetCurrentWordStartTime();
 
         PlaySliderPosition = (long) (timeSpan - TimeSpan.FromSeconds(3)).TotalMilliseconds;
@@ -389,6 +447,93 @@ public class MainWindowViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CurrentTimeText));
         OnPropertyChanged(nameof(PlaySliderPosition));
         _playTimer.Stop();
+    }
+
+    internal void ChangeEditMode()
+    {
+        IsEditMode = !IsEditMode;
+        if (IsEditMode)
+        {
+            LyricsText = Lyrics.GetLyricsText(out int caretIndex);
+            CaretIndex = caretIndex;
+        }
+        else
+        {
+            string cutLyricsText = LyricsText.Remove(CaretIndex);
+            Lyrics tempLyrics = new();
+            tempLyrics.ParseLyrics(cutLyricsText);
+            int wordIndex = tempLyrics.WordCount;
+            if (!cutLyricsText.EndsWith(" "))
+            {
+                wordIndex--;
+            }
+
+            Lyrics.ParseLyrics(LyricsText, wordIndex);
+        }
+    }
+
+    internal void AddToUndoList()
+    {
+        _undoList.Insert(0, Lyrics.Clone());
+        while (_undoList.Count > 50)
+        {
+            _undoList.RemoveAt(49);
+        }
+
+        _redoList.Clear();
+
+        OnPropertyChanged(nameof(IsUndoEnabled));
+        OnPropertyChanged(nameof(IsRedoEnabled));
+    }
+
+    internal void Undo()
+    {
+        if (_undoList.Count < 2)
+        {
+            return;
+        }
+
+        _redoList.Insert(0, Lyrics);
+        Lyrics = _undoList[0];
+        _undoList.RemoveAt(0);
+        OnPropertyChanged(nameof(IsUndoEnabled));
+        OnPropertyChanged(nameof(IsRedoEnabled));
+    }
+
+    internal void Redo()
+    {
+        if (_redoList.Count < 1)
+        {
+            return;
+        }
+
+        _undoList.Insert(0, Lyrics);
+        Lyrics = _redoList[0];
+        _redoList.RemoveAt(0);
+        OnPropertyChanged(nameof(IsUndoEnabled));
+        OnPropertyChanged(nameof(IsRedoEnabled));
+    }
+
+    internal void CheckScrollView()
+    {
+        try
+        {
+            int index = Lyrics.CurrentLineIndex;
+            int lineStartPosition = (int) (index * LineHeight);
+            int lineEndPosition = (int) ((index + 1) * LineHeight);
+            if (lineStartPosition < ScrollViewerPosition)
+            {
+                ScrollViewerPosition = lineStartPosition;
+            }
+            else if (lineEndPosition > ScrollViewerPosition + ScrollViewerHeight)
+            {
+                ScrollViewerPosition = lineEndPosition - ScrollViewerHeight;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
     }
 
 

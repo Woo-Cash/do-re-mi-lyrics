@@ -83,6 +83,9 @@ public partial class MainWindow
             case Key.F8 when Keyboard.Modifiers == ModifierKeys.None:
                 Application.Lyrics.RemoveStartTime();
                 break;
+            case Key.F12 when Keyboard.Modifiers == ModifierKeys.None:
+                _viewModel.ChangeEditMode();
+                break;
             case Key.S when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift):
                 _viewModel.SaveLyricsToNewFile();
                 break;
@@ -91,6 +94,13 @@ public partial class MainWindow
                 break;
             case Key.V when Keyboard.Modifiers == ModifierKeys.Control:
                 _viewModel.ParseLyricsFromClipboard();
+                break;
+            case Key.Z when Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift):
+            case Key.Y when Keyboard.Modifiers == ModifierKeys.Control:
+                _viewModel.Redo();
+                break;
+            case Key.Z when Keyboard.Modifiers == ModifierKeys.Control:
+                _viewModel.Undo();
                 break;
             case Key.Left when (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control:
                 Application.Audio.Rewind();
@@ -122,11 +132,23 @@ public partial class MainWindow
             case Key.Down when Keyboard.Modifiers == ModifierKeys.None:
                 Application.Lyrics.SelectNextLine();
                 break;
+            case Key.Subtract when Keyboard.Modifiers == ModifierKeys.Control:
+                Application.Lyrics.ChangeStartingTimeOfAllWordsFromCurrent(-0.2);
+                break;
+            case Key.Add when Keyboard.Modifiers == ModifierKeys.Control:
+                Application.Lyrics.ChangeStartingTimeOfAllWordsFromCurrent(0.2);
+                break;
+            case Key.Subtract when Keyboard.Modifiers == ModifierKeys.None:
+                Application.Lyrics.ChangeStartTimeOfCurrentWord(-0.2);
+                break;
+            case Key.Add when Keyboard.Modifiers == ModifierKeys.None:
+                Application.Lyrics.ChangeStartTimeOfCurrentWord(0.2);
+                break;
             case Key.Enter when Keyboard.Modifiers == ModifierKeys.Control:
                 _viewModel.MovePlaySliderToWord();
                 break;
             case Key.Enter when Keyboard.Modifiers == ModifierKeys.None:
-                Application.Lyrics.MoveWordToNewLine();
+                Application.Lyrics.MoveWordsToNewLine();
                 break;
             case Key.Back when Keyboard.Modifiers == ModifierKeys.None:
                 Application.Lyrics.MoveLineToPrevious();
@@ -168,8 +190,19 @@ public partial class MainWindow
     {
         try
         {
-            TextBlock wordTextBlock = (TextBlock) sender;
-            LyricsWord word = (LyricsWord) wordTextBlock.DataContext;
+            LyricsWord word;
+            switch (sender)
+            {
+                case Border wordBorder:
+                    word = (LyricsWord) wordBorder.DataContext;
+                    break;
+                case TextBlock wordTextBlock:
+                    word = (LyricsWord) wordTextBlock.DataContext;
+                    break;
+                default:
+                    return;
+            }
+
             Application.Lyrics.SelectWord(word);
             if (e.ClickCount == 2)
             {
@@ -199,5 +232,26 @@ public partial class MainWindow
 
     private void EditClick(object sender, RoutedEventArgs e)
     {
+        _viewModel.ChangeEditMode();
+    }
+
+    private void UndoClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.Undo();
+    }
+
+    private void RedoClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.Redo();
+    }
+
+    private void ScrollViewer_OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        _viewModel.ScrollViewerHeight = e.NewSize.Height;
+    }
+
+    private void StackPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        _viewModel.LineHeight = e.NewSize.Height;
     }
 }

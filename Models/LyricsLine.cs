@@ -8,9 +8,15 @@ namespace Do_Re_Mi_Lyrics.Models;
 
 public class LyricsLine : INotifyPropertyChanged
 {
+    private readonly Lyrics _lyrics;
     private bool _isNotProperTime;
     private bool _isTooShortTime;
     private ObservableCollection<LyricsWord> _words = new();
+
+    public LyricsLine(Lyrics lyrics)
+    {
+        _lyrics = lyrics;
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -53,43 +59,75 @@ public class LyricsLine : INotifyPropertyChanged
     internal LyricsWord? FirstWord => Words.Count > 0 ? Words[0] : null;
     internal LyricsWord? LastWord => Words.Count > 0 ? Words[^1] : null;
 
-    internal LyricsLine? NextLine => Application.Lyrics.LastLine != this ? Application.Lyrics.LyricsLines[Application.Lyrics.LyricsLines.IndexOf(this) + 1] : null;
+    internal LyricsLine? NextLine => _lyrics.LastLine == this || _lyrics.LastLine == null || _lyrics.LyricsLines.IndexOf(this) == -1
+        ? null
+        : _lyrics.LyricsLines[_lyrics.LyricsLines.IndexOf(this) + 1];
 
-    internal LyricsLine? PreviousLine => Application.Lyrics.FirstLine != this ? Application.Lyrics.LyricsLines[Application.Lyrics.LyricsLines.IndexOf(this) - 1] : null;
+    internal LyricsLine? PreviousLine => _lyrics.FirstLine == this || _lyrics.FirstLine == null || _lyrics.LyricsLines.IndexOf(this) == -1
+        ? null
+        : _lyrics.LyricsLines[_lyrics.LyricsLines.IndexOf(this) - 1];
 
-    public void CheckProperTime()
+    public string ToString(out int caretIndex)
     {
-        IsNotProperTime = StartTime - PreviousLine?.LastWord?.EndTime < TimeSpan.Zero;
-        IsTooShortTime = !string.IsNullOrWhiteSpace(FirstWord?.Word) && StartTime - PreviousLine?.StartTime < TimeSpan.FromSeconds(1.5) &&
-                         Application.Lyrics.FirstLine?.NextLine != this;
+        caretIndex = 0;
+        string result = StartTimeText;
+        foreach (LyricsWord word in Words)
+        {
+            if (word.IsSelected)
+            {
+                caretIndex = result.Length;
+            }
+
+            result += word;
+        }
+
+        return result;
     }
 
-    public void AddWord(LyricsWord word)
+    internal void CheckProperTime()
+    {
+        IsNotProperTime = StartTime - PreviousLine?.LastWord?.EndTime < TimeSpan.Zero;
+        IsTooShortTime = !string.IsNullOrWhiteSpace(FirstWord?.Word) && StartTime - PreviousLine?.StartTime < TimeSpan.FromSeconds(1.5) && _lyrics.FirstLine?.NextLine != this;
+    }
+
+    internal void AddWord(LyricsWord word)
     {
         Words.Add(word);
         UpdateStartTimeText();
     }
 
-    public void InsertWord(int index, LyricsWord word)
+    internal void InsertWord(int index, LyricsWord word)
     {
         Words.Insert(index, word);
         UpdateStartTimeText();
     }
 
-    public void RemoveWord(LyricsWord word)
+    internal void RemoveWord(LyricsWord word)
     {
         Words.Remove(word);
         UpdateStartTimeText();
     }
 
-    public void UpdateStartTimeText()
+    internal void UpdateStartTimeText()
     {
         OnPropertyChanged(nameof(StartTimeText));
     }
 
-    public override string ToString()
+    internal LyricsLine Clone(Lyrics lyrics)
     {
-        return Words.Aggregate(StartTimeText, (current, word) => current + word);
+        LyricsLine lyricsLine = new(lyrics)
+        {
+            IsNotProperTime = IsNotProperTime,
+            IsTooShortTime = IsTooShortTime
+        };
+        foreach (LyricsWord lyricsWord in Words)
+        {
+            LyricsWord newLyricsWord = lyricsWord.Clone(lyricsLine);
+            lyricsLine.Words.Add(newLyricsWord);
+            newLyricsWord.CheckProperTime();
+        }
+
+        return lyricsLine;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

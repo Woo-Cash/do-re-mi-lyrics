@@ -22,9 +22,9 @@ public class Audio : IDisposable
 
     public string CurrentTimeText => (_waveChannel?.CurrentTime ?? TimeSpan.Zero).ToString(@"mm\:ss\.ff");
 
-    public TimeSpan TotalTime => _waveChannel?.TotalTime ?? TimeSpan.Zero;
+    internal TimeSpan TotalTime => _waveChannel?.TotalTime ?? TimeSpan.Zero;
 
-    public TimeSpan CurrentTime
+    internal TimeSpan CurrentTime
     {
         get => TimeSpan.FromMilliseconds((_waveChannel?.CurrentTime ?? TimeSpan.Zero).TotalMilliseconds - (_waveChannel?.CurrentTime ?? TimeSpan.Zero).TotalMilliseconds % 10);
         set
@@ -36,7 +36,7 @@ public class Audio : IDisposable
         }
     }
 
-    public double Tempo
+    internal double Tempo
     {
         get => _processorStream?.Tempo ?? 1;
         set
@@ -49,7 +49,7 @@ public class Audio : IDisposable
         }
     }
 
-    public float Volume
+    internal float Volume
     {
         get => _waveChannel?.Volume ?? 1;
         set
@@ -69,7 +69,7 @@ public class Audio : IDisposable
         _waveOut.Dispose();
     }
 
-    public void Rewind()
+    internal void Rewind()
     {
         try
         {
@@ -93,7 +93,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void FastForward()
+    internal void FastForward()
     {
         try
         {
@@ -118,7 +118,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void Stop()
+    internal void Stop()
     {
         try
         {
@@ -145,7 +145,7 @@ public class Audio : IDisposable
     }
 
 
-    public void SetTempoUp()
+    internal void SetTempoUp()
     {
         try
         {
@@ -165,7 +165,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void SetTempoDown()
+    internal void SetTempoDown()
     {
         try
         {
@@ -185,7 +185,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void SetVolumeUp()
+    internal void SetVolumeUp()
     {
         try
         {
@@ -205,7 +205,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void SetVolumeDown()
+    internal void SetVolumeDown()
     {
         try
         {
@@ -225,7 +225,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void Play()
+    internal void Play()
     {
         try
         {
@@ -244,7 +244,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void Pause()
+    internal void Pause()
     {
         try
         {
@@ -263,7 +263,7 @@ public class Audio : IDisposable
         }
     }
 
-    public void OpenAudio()
+    internal void OpenAudio()
     {
         CloseWaveOut();
 

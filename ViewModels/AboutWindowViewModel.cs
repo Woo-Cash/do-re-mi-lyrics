@@ -23,17 +23,17 @@ public class AboutWindowViewModel : INotifyPropertyChanged
 
     public void ShowLicense()
     {
-        _webBrowser.NavigateToString(GetEmbeddedResource("Do_Re_Mi_Lyrics.TextResources", "license.html"));
+        _webBrowser.NavigateToString(GetEmbeddedResource("Do_Re_Mi_Lyrics.TextResources", "license.txt"));
     }
 
     public void ShowChangelog()
     {
-        _webBrowser.NavigateToString(GetEmbeddedResource("Do_Re_Mi_Lyrics.TextResources", "changelog.html"));
+        _webBrowser.NavigateToString(GetEmbeddedResource("Do_Re_Mi_Lyrics.TextResources", "changelog.txt"));
     }
 
     public void ShowHelp()
     {
-        _webBrowser.NavigateToString(GetEmbeddedResource("Do_Re_Mi_Lyrics.TextResources", "help.html"));
+        _webBrowser.NavigateToString(GetEmbeddedResource("Do_Re_Mi_Lyrics.TextResources", "help.txt"));
     }
 
     public string GetEmbeddedResource(string namespacename, string filename)

@@ -17,7 +17,7 @@
     <AssemblyVersion></AssemblyVersion>
     <FileVersion></FileVersion>
     <PackageLicenseFile>D:\Źródła własne\GitHub\do-re-mi-lyrics\TextResources\license.html</PackageLicenseFile>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,13 +31,15 @@
     <None Remove="Images\open.png" />
     <None Remove="Images\pause.png" />
     <None Remove="Images\play.png" />
+    <None Remove="Images\redo.png" />
     <None Remove="Images\rewind.png" />
     <None Remove="Images\save-as.png" />
     <None Remove="Images\save.png" />
     <None Remove="Images\stop.png" />
-    <None Remove="TextResources\changelog.html" />
-    <None Remove="TextResources\help.html" />
-    <None Remove="TextResources\license.html" />
+    <None Remove="Images\undo.png" />
+    <None Remove="TextResources\changelog.txt" />
+    <None Remove="TextResources\help.txt" />
+    <None Remove="TextResources\license.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,13 +62,15 @@
     <Resource Include="Images\open.png" />
     <Resource Include="Images\pause.png" />
     <Resource Include="Images\play.png" />
+    <Resource Include="Images\redo.png" />
     <Resource Include="Images\rewind.png" />
     <Resource Include="Images\save-as.png" />
     <Resource Include="Images\save.png" />
     <Resource Include="Images\stop.png" />
-    <EmbeddedResource Include="TextResources\changelog.html" />
-    <EmbeddedResource Include="TextResources\help.html" />
-    <EmbeddedResource Include="TextResources\license.html" />
+    <Resource Include="Images\undo.png" />
+    <EmbeddedResource Include="TextResources\changelog.txt" />
+    <EmbeddedResource Include="TextResources\help.txt" />
+    <EmbeddedResource Include="TextResources\license.txt" />
   </ItemGroup>
 
   <ItemGroup>
